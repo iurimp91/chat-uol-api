@@ -89,7 +89,31 @@ server.post("/messages", (req, res) => {
 });
 
 server.get("/messages", (req, res) => {
+    const { user } = req.headers;
+    const userMessages = messages.filter(message => {
+        if(message.to === "Todos") {
+            return message;    
+        } else if(message.from === user) {
+            return message;
+        } else if(message.to === user) {
+            return message;
+        } else if(message.type === "message") {
+            return message;
+        }
+    });
+    
+    
+    console.log(userMessages);
+    
+    const limit = req.query.limit;
+    
+    if(limit === undefined) {
+        return res.send(messages);
+    }
+    
     res.send(messages);
+
+    console.log(limit);
 });
 
 
