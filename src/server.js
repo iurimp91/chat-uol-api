@@ -53,4 +53,43 @@ server.post("/participants", (req, res) => {
     res.sendStatus(200);
 });
 
+server.get("/participants", (req, res) => {
+    res.send(participants);
+});
+
+server.post("/messages", (req, res) => {
+    const { user } = req.headers; 
+    const { to, text, type } = req.body;
+
+    if(to === "" || text === "") {
+        return res.sendStatus(400);
+    }
+
+    if(type !== "message" && type !== "private_message") {
+        return res.sendStatus(400);
+    }
+
+    const alreadyLogged = participants.find(element => element.name === user);
+
+    if(alreadyLogged === undefined) {
+        return res.sendStatus(400);
+    }
+
+    const newMessage = {
+        from: user,
+        to,
+        text,
+        type,
+        time: dayjs().format("HH:mm:ss"),
+    }
+
+    messages.push(newMessage);
+
+    res.sendStatus(200);
+});
+
+server.get("/messages", (req, res) => {
+    res.send(messages);
+});
+
 server.listen(4000);
