@@ -1,6 +1,7 @@
 import express from "express";
 import cors from "cors";
 import dayjs from "dayjs";
+import { stripHtml } from "string-strip-html";
 
 const server = express();
 
@@ -34,14 +35,14 @@ server.post("/participants", (req, res) => {
     }
 
     const newParticipant = {
-        name: person,
+        name: stripHtml(person).result.trim(),
         lastStatus: Date.now(),
     }
 
     participants.push(newParticipant);
 
     const message = {
-        from: person,
+        from: stripHtml(person).result.trim(),
         to: 'Todos',
         text: 'entra na sala...',
         type: 'status',
@@ -76,10 +77,10 @@ server.post("/messages", (req, res) => {
     }
 
     const newMessage = {
-        from: user,
-        to,
-        text,
-        type,
+        from: stripHtml(user).result.trim(),
+        to: stripHtml(to).result.trim(),
+        text: stripHtml(text).result.trim(),
+        type: stripHtml(type).result.trim(),
         time: dayjs().format("HH:mm:ss"),
     }
 
@@ -140,7 +141,7 @@ const intervalID = setInterval(() => {
         if(participant.lastStatus < (Date.now() - 10000)) {
             participants = participants.filter(element => element.name !== participant.name);
             const exitMessage = {
-                from: participant.name,
+                from: stripHtml(participant.name).result.trim(),
                 to: "Todos",
                 text: "sai da sala...",
                 type: 'status',
