@@ -108,14 +108,18 @@ server.get("/messages", (req, res) => {
     const limit = req.query.limit;
     
     if(limit === undefined) {
-        return res.send(messages);
+        return res.send(userMessages);
+    } else if(limit >= userMessages.length) {
+        return res.send(userMessages);
+    } else {
+        const limitedUserMessages = [];
+        let i = userMessages.length - limit;
+        for(i; i < userMessages.length; i++) {
+            limitedUserMessages.push(userMessages[i]);
+        }
+        return res.send(limitedUserMessages);
     }
-    
-    res.send(messages);
-
-    console.log(limit);
 });
-
 
 
 server.listen(4000);
