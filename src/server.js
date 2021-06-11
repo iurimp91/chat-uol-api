@@ -102,9 +102,6 @@ server.get("/messages", (req, res) => {
         }
     });
     
-    
-    console.log(userMessages);
-    
     const limit = req.query.limit;
     
     if(limit === undefined) {
@@ -121,5 +118,21 @@ server.get("/messages", (req, res) => {
     }
 });
 
+server.post("/status", (req, res) => {
+    const { user } = req.headers;
+
+    const stillLogged = participants.find(element => element.name === user);
+
+    if(stillLogged === undefined) {
+        return res.sendStatus(400);
+    } else {
+        participants.forEach((participant) => {
+            if(participant.name === user) {
+                participant.lastStatus = Date.now();
+            }
+        });
+        return res.send(200);
+    }
+});
 
 server.listen(4000);
