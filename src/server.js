@@ -7,7 +7,7 @@ const server = express();
 server.use(cors());
 server.use(express.json());
 
-const participants = [{
+let participants = [{
     name: 'João',
     lastStatus: 12313123
 }];
@@ -134,5 +134,21 @@ server.post("/status", (req, res) => {
         return res.send(200);
     }
 });
+
+const intervalID = setInterval(() => {
+    participants.forEach(participant => {
+        if(participant.lastStatus < (Date.now() - 10000)) {
+            participants = participants.filter(element => element.name !== participant.name);
+            const exitMessage = {
+                from: participant.name,
+                to: "Todos",
+                text: "sai da sala...",
+                type: 'status',
+                time: dayjs().format("HH:mm:ss"),
+            }
+            messages.push(exitMessage);
+        }
+    });
+}, 15000);
 
 server.listen(4000);
