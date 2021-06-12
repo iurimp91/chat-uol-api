@@ -14,13 +14,13 @@ let participants = [];
 
 let messages = [];
 
-// if(fs.existsSync("./participants.json")) {
-//     participants = JSON.parse(fs.readFileSync('./participants.json'));
-// }
+if(fs.existsSync("./participants.json")) {
+    participants = JSON.parse(fs.readFileSync('./participants.json'));
+}
 
-// if(fs.existsSync("./messages.json")) {
-//     messages = JSON.parse(fs.readFileSync('./messages.json'));
-// }
+if(fs.existsSync("./messages.json")) {
+    messages = JSON.parse(fs.readFileSync('./messages.json'));
+}
 
 server.post("/participants", (req, res) => {
     const schema = joi.object({
@@ -47,7 +47,7 @@ server.post("/participants", (req, res) => {
     }
 
     participants.push(newParticipant);
-    // fs.writeFileSync("participants.json", JSON.stringify(participants));
+    fs.writeFileSync("participants.json", JSON.stringify(participants));
 
     const message = {
         from: stripHtml(person).result.trim(),
@@ -58,7 +58,7 @@ server.post("/participants", (req, res) => {
     }
 
     messages.push(message);
-    // fs.writeFileSync("messages.json", JSON.stringify(messages));
+    fs.writeFileSync("messages.json", JSON.stringify(messages));
 
     res.sendStatus(200);
 });
@@ -68,21 +68,11 @@ server.get("/participants", (req, res) => {
 });
 
 server.post("/messages", (req, res) => {
-    const userSchema = joi.object({
-        user: joi.string().min(3).max(30).required(),
-        'content-type': joi.required(),
-        'user-agent': joi.required(),
-        accept: joi.required(),
-        'postman-token': joi.required(),
-        host: joi.required(),
-        'accept-encoding': joi.required(),
-        connection: joi.required(),
-        'content-length': joi.required()
-    });
+    const userSchema = joi.object().and("user", "content-type");
     
     const messageSchema = joi.object({
         to: joi.string().min(3).max(30).required(),
-        text: joi.string().required(),
+        text: joi.string().required().trim(),
         type: joi.string().required(),
     }).and("to", "text", "type");
 
@@ -116,7 +106,7 @@ server.post("/messages", (req, res) => {
     }
 
     messages.push(newMessage);
-    // fs.writeFileSync("messages.json", JSON.stringify(messages));
+    fs.writeFileSync("messages.json", JSON.stringify(messages));
 
     res.sendStatus(200);
 });
@@ -157,15 +147,14 @@ server.post("/status", (req, res) => {
     const stillLogged = participants.find(element => element.name === user);
 
     if(stillLogged === undefined) {
-        return res.sendStatus(400);
+        return res.sendStatus(400); 
     } else {
         participants.forEach((participant) => {
-            if(participant.name === user) {
+            if(participant.name === stillLogged.name) {
                 participant.lastStatus = Date.now();
-                // fs.writeFileSync("participants.json", JSON.stringify(participants));
             }
         });
-        return res.send(200);
+        return res.sendStatus(200);
     }
 });
 
@@ -173,7 +162,7 @@ const intervalID = setInterval(() => {
     participants.forEach(participant => {
         if(participant.lastStatus < (Date.now() - 10000)) {
             participants = participants.filter(element => element.name !== participant.name);
-            // fs.writeFileSync("participants.json", JSON.stringify(participants));
+            fs.writeFileSync("participants.json", JSON.stringify(participants));
             const exitMessage = {
                 from: stripHtml(participant.name).result.trim(),
                 to: "Todos",
@@ -182,7 +171,7 @@ const intervalID = setInterval(() => {
                 time: dayjs().format("HH:mm:ss"),
             }
             messages.push(exitMessage);
-            // fs.writeFileSync("messages.json", JSON.stringify(messages));
+            fs.writeFileSync("messages.json", JSON.stringify(messages));
         }
     });
 }, 15000);
